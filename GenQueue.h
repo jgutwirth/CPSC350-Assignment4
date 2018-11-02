@@ -15,7 +15,7 @@ class GenQueue {
         GenQueue();
         ~GenQueue();
 
-        void enqueue(T d);
+        void enqueue(T df);
         T dequeue();
 
         T vFront();

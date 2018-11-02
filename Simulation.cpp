@@ -20,28 +20,28 @@ Simulation::Simulation(string fileName){
 
 int Simulation::openFile(string fileName)
 {
+  cout << "1" << endl;
   inFile.open(fileName); //opens the file
   inFile >> currentLine;
-
-  windowCount = stoi(currentLine);
-
+  windowCount = atoi(currentLine.c_str());
   personAtWindow = new Student[windowCount];
   windows = new bool[windowCount];
   idleTimes = new int[windowCount];
 
-  while(!inFile.eof()){
-    inFile >> currentLine;
-    arrivalTick = stoi(currentLine);
-    inFile >> currentLine;
-    int peopleArriving = stoi(currentLine);
-
-    for(int i = 0; i < peopleArriving; i++)
-    {
+  while(!inFile.eof())
+  {
       inFile >> currentLine;
-      Student s(stoi(currentLine), arrivalTick);
-      totalPeople++;
-      entered.enqueue(s);
-    }
+      arrivalTick = atoi(currentLine.c_str());
+      inFile >> currentLine;
+      int peopleArriving = atoi(currentLine.c_str());
+
+      for(int i = 0; i < peopleArriving; i++)
+      {
+        inFile >> currentLine;
+        Student s(atoi(currentLine.c_str()), arrivalTick);
+        totalPeople++;
+        entered.enqueue(s);
+      }
   }
   waitTimes = new int[totalPeople];
   moveLine();
@@ -161,6 +161,7 @@ bool Simulation::windowsAreEmpty(){
 
 
 void Simulation::moveLine(){
+  cout << "2" << endl;
     while(!entered.isEmpty()|| !regLine.isEmpty() || !windowsAreEmpty())
     {
       if(entered.isEmpty() == false)

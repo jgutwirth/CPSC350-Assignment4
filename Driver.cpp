@@ -19,6 +19,6 @@ int main(int argc, char** argv) {
 
     s.openFile(file);
     s.moveLine();
-    
+
     return 0;
 }
