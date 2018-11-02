@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include "Simulation.h"
-#include "GenQueue.h"
 #include <algorithm>
 
 using namespace std;
@@ -19,14 +18,14 @@ Simulation::Simulation(string fileName){
   counter = 0;
 }
 
-int Simulation::openFile()
+int Simulation::openFile(string fileName)
 {
   inFile.open(fileName); //opens the file
   inFile >> currentLine;
 
   windowCount = stoi(currentLine);
 
-  personAtWindow = new person[windowCount];
+  personAtWindow = new Student[windowCount];
   windows = new bool[windowCount];
   idleTimes = new int[windowCount];
 
@@ -36,25 +35,16 @@ int Simulation::openFile()
     inFile >> currentLine;
     int peopleArriving = stoi(currentLine);
 
-    for(int i = 0; i < peopleArriving; i++){
+    for(int i = 0; i < peopleArriving; i++)
+    {
       inFile >> currentLine;
-      person p(stoi(currentLine), arrivalTick);
+      Student s(stoi(currentLine), arrivalTick);
       totalPeople++;
-      entered.enqueue(p);
+      entered.enqueue(s);
     }
   }
   waitTimes = new int[totalPeople];
-
-}
-
-int Simulation::windowsOpen()
-{
-  for(int i = 0; i < windowCount; i++){
-    if(windows[i] == false){
-      return i;
-    }
-  }
-  return -1;
+  moveLine();
 }
 
 void Simulation::clearWindows()
@@ -62,29 +52,24 @@ void Simulation::clearWindows()
   for(int i = 0; i < windowCount; i++){
     if(windows[i] == true)
     {
-      if(personAtWindow[i].isFinished())
+      if(personAtWindow[i].timeSpent == personAtWindow[i].timeNeeded)
       {
         windows[i] = false;
-        person temp = personAtWindow[i];
-        waitTimes[peopleHelped] = temp.getWaitTime();
+        Student temp = personAtWindow[i];
+        waitTimes[peopleHelped] = temp.timeWaited;
+        if (temp.timeWaited != 0){
+          waitTimes[peopleHelped] = temp.timeWaited - 1;
+        }
+        else
+        {
+          waitTimes[peopleHelped] = 0;
+        }
         peopleHelped++; //increments the number of inFile helped
       }
     }
   }
 }
 
-//finds the median wait time of the students
-double Simulation::findMedian(){
-  sort(waitTimes, waitTimes + totalPeople - 1);
-  if((totalPeople%2) ==1)
-  {
-    return (waitTimes[(totalPeople/2)]);
-  }
-    return  (waitTimes[totalPeople/2]+waitTimes[(totalPeople/2)-1)]);
-  }
-}
-
-//outputs the stats of the studnet times and window times
 void Simulation::compute(){
   double meanWait = 0;
   int medianWait = 0;
@@ -124,30 +109,30 @@ void Simulation::compute(){
 
 //adds students that arrive at specific tick mark
 void Simulation::addToLine(){
-  person p = entered.vFront();
-  while(p.getArrivalTick() == ticks)
+  Student s = entered.vFront();
+  while(s.arrivalTime == ticks)
   {
-    regLine.enqueue(p);
+    regLine.enqueue(s);
     entered.dequeue();
-    p = entered.vFront();
+    s = entered.vFront();
   }
 }
 
 //updates the student wait time
 void Simulation::updateWaitTime()
 {
-  GenQueue<person> copy;
+  GenQueue<Student> copy;
   while(!regLine.isEmpty())
   {
-    person temp1 = regLine.vFront();
+    Student temp1 = regLine.vFront();
     regLine.dequeue();
     copy.enqueue(temp1);
   }
   while(!copy.isEmpty())
   {
-    person temp = copy.vFront();
+    Student temp = copy.vFront();
     copy.dequeue();
-    temp.isWaiting();
+    temp.timeWaited++;
     regLine.enqueue(temp);
   }
 }
@@ -186,7 +171,7 @@ void Simulation::moveLine(){
 
       while(windowsOpen() != -1 && !regLine.isEmpty())
       {
-        person temp = regLine.vFront();
+        Student temp = regLine.vFront();
         int openWindow = windowsOpen();
         windows[openWindow] = true;
         personAtWindow[openWindow] = temp;
@@ -194,7 +179,7 @@ void Simulation::moveLine(){
       }
       for(int i = 0; i < windowCount; i++)
       {
-        personAtWindow[i].isAtWindow();
+        personAtWindow[i].timeSpent++;
       }
 
       updateWaitTime();
@@ -202,9 +187,28 @@ void Simulation::moveLine(){
 
       if(ticks == 5)
       {
-        person test = regLine.vFront();
+        Student test = regLine.vFront();
       }
       ticks++;
     }
-    outputStats();
+    compute();
+}
+
+int Simulation::windowsOpen()
+{
+  for(int i = 0; i < windowCount; i++){
+    if(windows[i] == false){
+      return i;
+    }
+  }
+  return -1;
+}
+
+double Simulation::findMedian(){
+  sort(waitTimes, waitTimes + totalPeople - 1);
+  if((totalPeople%2) ==1)
+  {
+    return (waitTimes[(totalPeople/2)]);
+  }
+    return  (waitTimes[totalPeople/2] + waitTimes[(totalPeople/2)-1]);
 }

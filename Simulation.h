@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include "Students.h"
-#include "genQueue.h"
+#include "Student.h"
+#include "GenQueue.h"
 using namespace std;
 
 class Simulation
@@ -14,14 +14,14 @@ class Simulation
     int totalPeople;
     int windowCount;
     int ticks;
-    
-    GenQueue<person> entered;
-    GenQueue<person> regLine;
+
+    GenQueue<Student> entered;
+    GenQueue<Student> regLine;
 
     int *idleTimes;
     int *waitTimes;
     bool *windows;
-    person *personAtWindow;
+    Student *personAtWindow;
 
     string currentLine;
     int arrivalTick;
@@ -36,8 +36,8 @@ class Simulation
     void clearWindows();
     void updateIdleWindows();
     double findMedian();
-    void outputStats();
     void updateWaitTime();
     void printLine();//debugging purposes
-
+    int openFile(string fileName);
+    void compute();
 };
